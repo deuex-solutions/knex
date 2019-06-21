@@ -28,7 +28,6 @@ assign(QueryCompiler_Clickhouse.prototype, {
     const join = this.join();
     const updates = this._prepUpdate(this.single.update);
     const where = this.where();
-    const preWhere = this.preWhere()
     const order = this.order();
     const limit = this.limit();
     return (
@@ -37,7 +36,6 @@ assign(QueryCompiler_Clickhouse.prototype, {
       ' set ' +
       updates.join(', ') +
       (where ? ` ${where}` : '') +
-      (preWhere ? ` ${preWhere}` : '') +
       (order ? ` ${order}` : '') +
       (limit ? ` ${limit}` : '')
     );
@@ -95,8 +93,8 @@ assign(QueryCompiler_Clickhouse.prototype, {
   //preWhere clause
 
   // Compiles all `where` statements on the query.
-  preWhere() {
-    const wheres = this.grouped.where;
+  prewhere() {
+    const wheres = this.grouped.prewhere;
     if (!wheres) return;
     const sql = [];
     let i = -1;

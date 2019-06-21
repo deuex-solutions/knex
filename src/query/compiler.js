@@ -40,6 +40,7 @@ function QueryCompiler(client, builder) {
 const components = [
   'columns',
   'join',
+  'prewhere',
   'where',
   'union',
   'group',
@@ -110,7 +111,7 @@ assign(QueryCompiler.prototype, {
   // generated query string.
   select() {
     let sql = this.with();
-
+    
     const statements = components.map((component) => this[component](this));
     sql += compact(statements).join(' ');
     return sql;
