@@ -10,7 +10,7 @@ const QueryCompiler = require('./query/compiler');
 const SchemaCompiler = require('../../schema/compiler');
 const TableCompiler = require('../../schema/tablecompiler');
 const ColumnCompiler = require('../../schema/columncompiler');
-
+const QueryBuilder = require('./query/builder');
 const { assign, map } = require('lodash');
 const { makeEscape } = require('../../query/string');
 
@@ -52,6 +52,10 @@ assign(Client_Clickhouse.prototype, {
 
   queryCompiler() {
     return new QueryCompiler(this, ...arguments);
+  },
+
+  queryBuilder() {
+    return new QueryBuilder(this);
   },
 
   schemaCompiler() {

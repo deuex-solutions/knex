@@ -90,7 +90,8 @@ assign(QueryCompiler_Clickhouse.prototype, {
     return `limit ${limit}`;
   },
 
-  //preWhere clause
+  // PreWhere Clause
+  // ------
 
   // Compiles all `where` statements on the query.
   prewhere() {
@@ -118,6 +119,72 @@ assign(QueryCompiler_Clickhouse.prototype, {
     }
     return sql.length > 1 ? sql.join(' ') : '';
   },
+
+  preWhereIn(statement) {
+    let columns = null;
+    if (Array.isArray(statement.column)) {
+      columns = `(${this.formatter.columnize(statement.column)})`;
+    } else {
+      columns = this.formatter.wrap(statement.column);
+    }
+
+    const values = this.formatter.values(statement.value);
+    return `${columns} ${this._not(statement, 'in ')}${values}`;
+  },
+
+  preWhereNull(statement) {
+    return (
+      this.formatter.wrap(statement.column) +
+      ' is ' +
+      this._not(statement, 'null')
+    );
+  },
+
+  // Compiles a basic "where" clause.
+  preWhereBasic(statement) {
+    return (
+      this._not(statement, '') +
+      this.formatter.wrap(statement.column) +
+      ' ' +
+      this.formatter.operator(statement.operator) +
+      ' ' +
+      (statement.asColumn
+        ? this.formatter.wrap(statement.value)
+        : this.formatter.parameter(statement.value))
+    );
+  },
+
+  preWhereExists(statement) {
+    return (
+      this._not(statement, 'exists') +
+      ' (' +
+      this.formatter.rawOrFn(statement.value) +
+      ')'
+    );
+  },
+
+  preWhereWrapped(statement) {
+    const val = this.formatter.rawOrFn(statement.value, 'where');
+    return (val && this._not(statement, '') + '(' + val.slice(6) + ')') || '';
+  },
+
+  preWhereBetween(statement) {
+    return (
+      this.formatter.wrap(statement.column) +
+      ' ' +
+      this._not(statement, 'between') +
+      ' ' +
+      map(statement.value, bind(this.formatter.parameter, this.formatter)).join(
+        ' and '
+      )
+    );
+  },
+
+  // Compiles a "whereRaw" query.
+  preWhereRaw(statement) {
+    return this._not(statement, '') + this.formatter.unwrapRaw(statement.value);
+  },
+
 });
 
 // Set the QueryBuilder & QueryCompiler on the client object,
